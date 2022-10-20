@@ -1,0 +1,39 @@
+@font-face {
+    font-family: "source sans serif";
+    src: url("SourceSansPro-Regular.ttf") format("truetype");
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #252525;
+    color: white;
+    font-family: source sans serif;
+    caret-color: white !important;
+}
+
+input,
+textarea {
+    background: none;
+    all: unset;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px;
+    word-break: break-word;
+}
+
+
+/* span {
+    width: 100%;
+    box-sizing: border-box;
+    border: none !important;
+} */
+
+.ueberschrift {
+    font-size: 1.6em;
+    font-weight: bold;
+    padding-left: 1.2vw;
+    padding-right: 1.2vw;
+    margin-bottom: 0.75em;
+    margin-top: 0.3em;
+}
