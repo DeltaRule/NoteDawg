@@ -82,7 +82,8 @@ document.onkeydown = function(e) {
                 dataStr = encodeURI("data:application/json;charset=utf-8," + JSON.stringify(saveArray));
                 dlAnchorElem = document.getElementById("downloadAnchorElem");
                 dlAnchorElem.setAttribute("href", dataStr);
-                dlAnchorElem.setAttribute("download", "");
+                saveValue = ""
+                dlAnchorElem.setAttribute("download");
                 dlAnchorElem.click();
                 break;
             case "l":
@@ -260,9 +261,11 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
         if (!isPainting) {
             return;
         }
+        clientX = e.clientX || e.touches[0].clientX
+        clientY = e.clientY || e.touches[0].clientY
         ctx.lineWidth = lineWidth;
         ctx.lineCap = "round";
-        ctx.lineTo(e.clientX - canvas.offsetLeft + window.scrollX, e.clientY - canvas.offsetTop + window.scrollY);
+        ctx.lineTo(clientX - canvas.offsetLeft + window.scrollX, clientY - canvas.offsetTop + window.scrollY);
         ctx.stroke();
     };
 
@@ -271,13 +274,24 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
         startX = e.clientX;
         startY = e.clientY;
     });
+    canvas.addEventListener("touchstart", (e) => {
+        isPainting = true;
+
+    });
 
     canvas.addEventListener("mouseup", (e) => {
         isPainting = false;
         ctx.stroke();
         ctx.beginPath();
     });
+    canvas.addEventListener("touchend", (e) => {
+        isPainting = false;
+        ctx.stroke();
+        ctx.beginPath();
+    });
+
 
     canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("touchmove", draw);
 }
 document.getElementById("selectFiles").addEventListener("change", load_file);
