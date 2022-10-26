@@ -1,3 +1,5 @@
+var focusedElement = undefined
+
 document.onkeydown = function(e) {
     if (e.altKey) {
         let ele = undefined;
@@ -41,6 +43,7 @@ document.onkeydown = function(e) {
                 document.querySelector("body").appendChild(ele);
                 new CLIPBOARD_CLASS(ele, true);
                 ele.addEventListener("click", delete_element);
+                focusedElement = ele
                 break;
             case "4":
                 ele = document.createElement("input");
@@ -83,7 +86,6 @@ document.onkeydown = function(e) {
                 dlAnchorElem = document.getElementById("downloadAnchorElem");
                 dlAnchorElem.setAttribute("href", dataStr);
                 saveValue = ""
-                dlAnchorElem.setAttribute("download");
                 dlAnchorElem.click();
                 break;
             case "l":
@@ -213,6 +215,9 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
     document.addEventListener(
         "paste",
         function(e) {
+            if(focusedElement != canvas){
+                return
+            }
             _self.paste_auto(e);
         },
         false
@@ -220,6 +225,7 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
 
     //on paste
     this.paste_auto = function(e) {
+        
         if (e.clipboardData) {
             var items = e.clipboardData.items;
             if (!items) return;
@@ -271,11 +277,13 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
 
     canvas.addEventListener("mousedown", (e) => {
         isPainting = true;
+        focusedElement = canvas
         startX = e.clientX;
         startY = e.clientY;
     });
     canvas.addEventListener("touchstart", (e) => {
         isPainting = true;
+        focusedElement = canvas
 
     });
 
@@ -289,6 +297,41 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
         ctx.stroke();
         ctx.beginPath();
     });
+    function addInput(x, y) {
+
+    var input = document.createElement('input');
+
+    input.type = 'text';
+    input.style.position = 'fixed';
+    input.style.left = (x - 4) + 'px';
+    input.style.top = (y - 4) + 'px';
+
+    input.onkeydown = handleEnter;
+
+    document.body.appendChild(input);
+
+    input.focus();
+
+    hasInput = true;
+}
+
+//Key handler for input box:
+function handleEnter(e) {
+    var keyCode = e.keyCode;
+    if (keyCode === 13) {
+        drawText(this.value, parseInt(this.style.left, 10), parseInt(this.style.top, 10));
+        document.body.removeChild(this);
+        hasInput = false;
+    }
+}
+
+//Draw the text onto canvas:
+function drawText(txt, x, y) {
+    ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
+    ctx.font = font;
+    ctx.fillText(txt, x - 4, y - 4);
+}
 
 
     canvas.addEventListener("mousemove", draw);

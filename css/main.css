@@ -10,6 +10,7 @@ body {
     color: white;
     font-family: source sans serif;
     caret-color: white !important;
+    overflow-x: hidden;
 }
 
 input,
@@ -20,6 +21,7 @@ textarea {
     box-sizing: border-box;
     padding: 5px;
     word-break: break-word;
+    overflow-y: hidden;
 }
 
 
