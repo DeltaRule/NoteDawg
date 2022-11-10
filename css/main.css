@@ -39,3 +39,13 @@ textarea {
     margin-bottom: 0.75em;
     margin-top: 0.3em;
 }
+
+canvas{
+    touch-action: none;
+}
+.resizeable{
+    resize: both;
+    overflow:auto;
+    width: 100vw;
+    height:500px;
+}

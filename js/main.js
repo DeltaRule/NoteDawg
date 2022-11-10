@@ -75,6 +75,10 @@ document.onkeydown = function(e) {
                             });
                             break;
                         case "INPUT":
+                            if(toSave[i].type =="file"){
+                                break;
+                            }
+                            
                             saveArray.push({
                                 4: toSave[i].value,
                             });
@@ -137,7 +141,8 @@ function load_file(e) {
                     ele.addEventListener("click", delete_element);
                     break;
                 case "2":
-                    ele = document.createElement("span");
+                    try{
+                        ele = document.createElement("span");
 
                     document.querySelector("body").appendChild(ele);
                     MQ = MathQuill.getInterface(2);
@@ -154,6 +159,10 @@ function load_file(e) {
 
                     mathField.latex(result[i][2]);
                     ele.addEventListener("click", delete_element);
+                    }
+                    catch(e){
+                        console.error(e)
+                    }
                     break;
                 case "3":
                     ele = document.createElement("canvas");
