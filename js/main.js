@@ -1,4 +1,10 @@
 var focusedElement = undefined
+let savedImages = []
+let removedImages = []
+
+window.onbeforeunload = function(e) {
+    return "Do you want to exit this page?";
+  };
 
 document.onkeydown = function(e) {
     if (e.altKey) {
@@ -38,12 +44,28 @@ document.onkeydown = function(e) {
                 ele = document.createElement("canvas");
                 // ele.src = "jspaint/index.html";
 
+                let move_div = document.createElement("div");
+                move_div.className = "resizeable"
+                ele.addEventListener("mouseover",(e)=>{
+                    console.debug(e);
+                    let ctx = move_div.firstChild.getContext("2d");
+                    if(Math.abs(ctx.canvas.width-move_div.clientWidth*0.95)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight*0.95)>9) {
+                        let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
+                        ctx.canvas.width = move_div.clientWidth*0.95;
+                        ctx.canvas.height = move_div.clientHeight*0.95;
+                        ctx.putImageData(img, 0,0);
+                    }
+                });
+                move_div.appendChild(ele);
+
                 ele.width = document.body.clientWidth.toString();
                 ele.height = "500";
-                document.querySelector("body").appendChild(ele);
+                document.querySelector("body").appendChild(move_div);
                 new CLIPBOARD_CLASS(ele, true);
                 ele.addEventListener("click", delete_element);
                 focusedElement = ele
+                savedImages = []
+                removedImages = []
                 break;
             case "4":
                 ele = document.createElement("input");
@@ -74,6 +96,13 @@ document.onkeydown = function(e) {
                                 3: GetDrawingAsString(toSave[i]),
                             });
                             break;
+                        case "DIV":
+                            if(toSave[i].firstChild.tagName == "CANVAS") {
+                                saveArray.push({
+                                    3: GetDrawingAsString(toSave[i].firstChild),
+                                });
+                            }
+                            break;
                         case "INPUT":
                             if(toSave[i].type =="file"){
                                 break;
@@ -96,6 +125,23 @@ document.onkeydown = function(e) {
                 document.getElementById("selectFiles").style.display = "block";
                 break;
         }
+    } else if(e.ctrlKey) {
+        switch(e.key) {
+            case "z":
+                if(savedImages.length>0) {
+                    let ctx = focusedElement.getContext("2d");
+                    removedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
+                    ctx.putImageData(savedImages.pop(), 0,0);
+                }
+                break;
+            case "y":
+                if(removedImages.length>0) {
+                    let ctx = focusedElement.getContext("2d");
+                    savedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
+                    focusedElement.getContext("2d").putImageData(removedImages.pop(), 0,0);
+                }
+                break;
+        }
     }
 };
 
@@ -106,11 +152,15 @@ function GetDrawingAsString(canvas) {
     return pngUrl;
 }
 
-function ReuseCanvasString(canvas, url) {
+function ReuseCanvasString(div, canvas, url) {
     let img = new Image();
     img.onload = () => {
         // Note: here img.naturalHeight & img.naturalWidth will be your original canvas size
         let ctx = canvas.getContext("2d");
+        ctx.canvas.width = img.width;
+        ctx.canvas.height = img.height;
+        div.style.width = (img.width*1.05).toString()+"px";
+        div.style.height = (img.height*1.05).toString()+"px";
         ctx.drawImage(img, 0, 0);
     };
     img.src = url;
@@ -168,12 +218,26 @@ function load_file(e) {
                     ele = document.createElement("canvas");
                     // ele.src = "jspaint/index.html";
 
-                    ele.width = document.body.clientWidth.toString();
-                    ele.height = "500";
-                    document.querySelector("body").appendChild(ele);
+                    let move_div = document.createElement("div");
+                    move_div.className = "resizeable";
+                    ele.addEventListener("mouseover",(e)=>{
+                        console.debug(e);
+                        let ctx = move_div.firstChild.getContext("2d");
+                        if(Math.abs(ctx.canvas.width-move_div.clientWidth*0.95)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight*0.95)>9) {
+                            let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
+                            ctx.canvas.width = move_div.clientWidth*0.95;
+                            ctx.canvas.height = move_div.clientHeight*0.95;
+                            ctx.putImageData(img, 0,0);
+                        }
+                    });
+
+                    //ele.width = document.body.clientWidth.toString();
+                    //ele.height = "500";
                     new CLIPBOARD_CLASS(ele, true);
                     ele.addEventListener("click", delete_element);
-                    ReuseCanvasString(ele, result[i][3]);
+                    ReuseCanvasString(move_div, ele, result[i][3]);
+                    move_div.appendChild(ele);
+                    document.querySelector("body").appendChild(move_div);
                     break;
                 case "4":
                     ele = document.createElement("input");
@@ -286,14 +350,23 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
 
     canvas.addEventListener("mousedown", (e) => {
         isPainting = true;
-        focusedElement = canvas
+        if(focusedElement != canvas) {
+            savedImages = [];
+            focusedElement = canvas;
+        }
+        removedImages = [];
         startX = e.clientX;
         startY = e.clientY;
+        savedImages.push(ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height));
     });
     canvas.addEventListener("touchstart", (e) => {
         isPainting = true;
-        focusedElement = canvas
-
+        if(focusedElement != canvas) {
+            savedImages = [];
+            focusedElement = canvas;
+        }
+        removedImages = [];
+        savedImages.push(ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height));
     });
 
     canvas.addEventListener("mouseup", (e) => {
