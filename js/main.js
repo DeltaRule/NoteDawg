@@ -277,6 +277,22 @@ function auto_height(elem) {
     elem.style.height = elem.scrollHeight + "px";
 }
 
+function PAINT_BTN_CLASS(canvas, color, index) {
+    var _self = this;
+    var ctx = canvas.getContext("2d");
+    let white_btn = document.createElement("div");
+    white_btn.className = "paint_btn";
+    white_btn.style.background = color;
+    white_btn.onclick = () => {
+        ctx.strokeStyle = color;
+    }
+
+    if (canvas.parentElement && canvas.parentElement.tagName == "DIV") {
+        white_btn.style.left = (index*10).toString()+"px";
+        canvas.parentElement.appendChild(white_btn);
+    }
+}
+
 function CLIPBOARD_CLASS(canvas, autoresize) {
     var _self = this;
     var ctx = canvas.getContext("2d");
@@ -284,6 +300,30 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
     ctx.fillStyle = "white";
     var lineWidth = 4;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    new PAINT_BTN_CLASS(canvas, "black", 0);
+    new PAINT_BTN_CLASS(canvas, "red", 1);
+    new PAINT_BTN_CLASS(canvas, "white", 2);
+    /*let white_btn = document.createElement("div");
+    white_btn.className = "paint_btn";
+    white_btn.style.background = "white";
+    white_btn.onclick = () => {
+        ctx.strokeStyle = "white";
+    }
+    let black_btn = document.createElement("div");
+    black_btn.className = "paint_btn";
+    black_btn.style.background = "black";
+    black_btn.onclick = () => {
+        ctx.strokeStyle = "black";
+    }
+
+    if (canvas.parentElement.tagName == "DIV") {
+        black_btn.style.left = "1px";
+        canvas.parentElement.appendChild(black_btn);
+        black_btn.style.left = "11px";
+        canvas.parentElement.appendChild(white_btn);
+    }*/
+
     //handlers
     document.addEventListener(
         "paste",
