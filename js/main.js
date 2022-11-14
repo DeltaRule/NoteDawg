@@ -42,27 +42,31 @@ document.onkeydown = function(e) {
                 break;
             case "3":
                 ele = document.createElement("canvas");
+                ele.tabIndex = 1;
                 // ele.src = "jspaint/index.html";
 
                 let move_div = document.createElement("div");
                 move_div.className = "resizeable"
                 ele.addEventListener("mouseover",(e)=>{
-                    console.debug(e);
+                    // console.debug(e);
                     let ctx = move_div.firstChild.getContext("2d");
-                    if(Math.abs(ctx.canvas.width-move_div.clientWidth*0.95)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight*0.95)>9) {
+                    if(Math.abs(ctx.canvas.width-move_div.clientWidth-15)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight-10)>9) {
                         let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
-                        ctx.canvas.width = move_div.clientWidth*0.95;
-                        ctx.canvas.height = move_div.clientHeight*0.95;
+                        ctx.canvas.width = move_div.clientWidth-15;
+                        ctx.canvas.height = move_div.clientHeight-10;
                         ctx.putImageData(img, 0,0);
                     }
                 });
                 move_div.appendChild(ele);
 
-                ele.width = document.body.clientWidth.toString();
+                ele.width = (document.body.clientWidth-15).toString();
                 ele.height = "500";
+                move_div.style.width = (ele.width+15).toString()+"px";
+                move_div.style.height = (ele.height+10).toString()+"px";
                 document.querySelector("body").appendChild(move_div);
                 new CLIPBOARD_CLASS(ele, true);
                 ele.addEventListener("click", delete_element);
+                ele.focus();
                 focusedElement = ele
                 savedImages = []
                 removedImages = []
@@ -128,14 +132,16 @@ document.onkeydown = function(e) {
     } else if(e.ctrlKey) {
         switch(e.key) {
             case "z":
-                if(savedImages.length>0) {
+                if(e.target.tagName=="CANVAS" && savedImages.length>0) {
+                    e.preventDefault();
                     let ctx = focusedElement.getContext("2d");
                     removedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
                     ctx.putImageData(savedImages.pop(), 0,0);
                 }
                 break;
             case "y":
-                if(removedImages.length>0) {
+                if(e.target.tagName=="CANVAS" && removedImages.length>0) {
+                    e.preventDefault();
                     let ctx = focusedElement.getContext("2d");
                     savedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
                     focusedElement.getContext("2d").putImageData(removedImages.pop(), 0,0);
@@ -159,8 +165,8 @@ function ReuseCanvasString(div, canvas, url) {
         let ctx = canvas.getContext("2d");
         ctx.canvas.width = img.width;
         ctx.canvas.height = img.height;
-        div.style.width = (img.width*1.05).toString()+"px";
-        div.style.height = (img.height*1.05).toString()+"px";
+        div.style.width = (img.width+15).toString()+"px";
+        div.style.height = (img.height+10).toString()+"px";
         ctx.drawImage(img, 0, 0);
     };
     img.src = url;
@@ -216,27 +222,28 @@ function load_file(e) {
                     break;
                 case "3":
                     ele = document.createElement("canvas");
+                    ele.tabIndex = 1;
                     // ele.src = "jspaint/index.html";
 
                     let move_div = document.createElement("div");
                     move_div.className = "resizeable";
                     ele.addEventListener("mouseover",(e)=>{
-                        console.debug(e);
+                        // console.debug(e);
                         let ctx = move_div.firstChild.getContext("2d");
-                        if(Math.abs(ctx.canvas.width-move_div.clientWidth*0.95)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight*0.95)>9) {
+                        if(Math.abs(ctx.canvas.width-move_div.clientWidth-15)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight-10)>9) {
                             let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
-                            ctx.canvas.width = move_div.clientWidth*0.95;
-                            ctx.canvas.height = move_div.clientHeight*0.95;
+                            ctx.canvas.width = move_div.clientWidth-15;
+                            ctx.canvas.height = move_div.clientHeight-10;
                             ctx.putImageData(img, 0,0);
                         }
                     });
+                    move_div.appendChild(ele);
 
                     //ele.width = document.body.clientWidth.toString();
                     //ele.height = "500";
                     new CLIPBOARD_CLASS(ele, true);
                     ele.addEventListener("click", delete_element);
                     ReuseCanvasString(move_div, ele, result[i][3]);
-                    move_div.appendChild(ele);
                     document.querySelector("body").appendChild(move_div);
                     break;
                 case "4":
@@ -277,21 +284,25 @@ function auto_height(elem) {
     elem.style.height = elem.scrollHeight + "px";
 }
 
-function PAINT_BTN_CLASS(canvas, color, index) {
+function PAINT_BTN_CLASS(canvas, clipboard, color, index) {
     var _self = this;
     var ctx = canvas.getContext("2d");
     let white_btn = document.createElement("div");
     white_btn.className = "paint_btn";
     white_btn.style.background = color;
-    white_btn.onclick = () => {
+    white_btn.onmousedown = (e) => {
         ctx.strokeStyle = color;
+        clipboard.color = color;
     }
 
     if (canvas.parentElement && canvas.parentElement.tagName == "DIV") {
-        white_btn.style.left = (index*10).toString()+"px";
+        white_btn.style.left = (index*30).toString()+"px";
         canvas.parentElement.appendChild(white_btn);
     }
+    return white_btn;
 }
+
+COLORS = ["red","yellow","green","cyan","blue","purple"];
 
 function CLIPBOARD_CLASS(canvas, autoresize) {
     var _self = this;
@@ -300,10 +311,16 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
     ctx.fillStyle = "white";
     var lineWidth = 4;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    console.debug(_self);
+    this.color = "black";
 
-    new PAINT_BTN_CLASS(canvas, "black", 0);
-    new PAINT_BTN_CLASS(canvas, "red", 1);
-    new PAINT_BTN_CLASS(canvas, "white", 2);
+    let btns = []
+    let index = 0;
+    btns.push(new PAINT_BTN_CLASS(canvas, this, "black", index++));
+    for(let col of COLORS) {
+        btns.push(new PAINT_BTN_CLASS(canvas, this, col, index++));
+    }
+    btns.push(new PAINT_BTN_CLASS(canvas, this, "white", index++));
     /*let white_btn = document.createElement("div");
     white_btn.className = "paint_btn";
     white_btn.style.background = "white";
@@ -368,6 +385,8 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
                 //resize
                 canvas.width = pastedImage.width;
                 canvas.height = pastedImage.height;
+                canvas.parentElement.style.width = (pastedImage.width+15).toString()+"px";
+                canvas.parentElement.style.height = (pastedImage.height+10).toString()+"px";
             } else {
                 //clear canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -378,25 +397,30 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
     };
     const draw = (e) => {
         if (!isPainting) {
+            btns.forEach((btn)=>{btn.style.display="block";});
             return;
+        } else {
+            canvas.focus();
+            btns.forEach((btn)=>{btn.style.display="none";});
         }
         clientX = e.clientX || e.touches[0].clientX
         clientY = e.clientY || e.touches[0].clientY
         ctx.lineWidth = lineWidth;
         ctx.lineCap = "round";
-        ctx.lineTo(clientX - canvas.offsetLeft + window.scrollX, clientY - canvas.offsetTop + window.scrollY);
+        ctx.strokeStyle = _self.color;
+        ctx.lineTo(clientX - canvas.parentElement.offsetLeft + window.scrollX, clientY - canvas.parentElement.offsetTop + window.scrollY);
         ctx.stroke();
     };
 
     canvas.addEventListener("mousedown", (e) => {
-        isPainting = true;
+        if(e.button != 2) isPainting = true;
         if(focusedElement != canvas) {
             savedImages = [];
             focusedElement = canvas;
         }
         removedImages = [];
-        startX = e.clientX;
-        startY = e.clientY;
+        startX = e.clientX - canvas.parentElement.offsetLeft + window.scrollX;
+        startY = e.clientY - canvas.parentElement.offsetTop + window.scrollY;
         savedImages.push(ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height));
     });
     canvas.addEventListener("touchstart", (e) => {
@@ -411,9 +435,18 @@ function CLIPBOARD_CLASS(canvas, autoresize) {
 
     canvas.addEventListener("mouseup", (e) => {
         isPainting = false;
+        if(e.button == 2) {
+            e.preventDefault();
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = _self.color;
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(e.clientX - canvas.parentElement.offsetLeft + window.scrollX, e.clientY - canvas.parentElement.offsetTop + window.scrollY);
+        }
         ctx.stroke();
         ctx.beginPath();
     });
+
     canvas.addEventListener("touchend", (e) => {
         isPainting = false;
         ctx.stroke();
@@ -458,5 +491,6 @@ function drawText(txt, x, y) {
 
     canvas.addEventListener("mousemove", draw);
     canvas.addEventListener("touchmove", draw);
+    canvas.addEventListener("contextmenu", e => e.preventDefault());
 }
 document.getElementById("selectFiles").addEventListener("change", load_file);
