@@ -49,9 +49,14 @@ document.onkeydown = function(e) {
                 move_div.className = "resizeable"
                 ele.addEventListener("mouseover",(e)=>{
                     // console.debug(e);
-                    let ctx = move_div.firstChild.getContext("2d");
+                    let ctx = ele.getContext("2d");
                     if(Math.abs(ctx.canvas.width-move_div.clientWidth-15)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight-10)>9) {
+                        if(focusedElement != ele) {
+                            savedImages = [];
+                        }
+                        focusedElement = ele;
                         let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
+                        savedImages.push(img);
                         ctx.canvas.width = move_div.clientWidth-15;
                         ctx.canvas.height = move_div.clientHeight-10;
                         ctx.putImageData(img, 0,0);
@@ -59,7 +64,7 @@ document.onkeydown = function(e) {
                 });
                 move_div.appendChild(ele);
 
-                ele.width = (document.body.clientWidth-15).toString();
+                ele.width = (document.body.clientWidth-55).toString();
                 ele.height = "500";
                 move_div.style.width = (ele.width+15).toString()+"px";
                 move_div.style.height = (ele.height+10).toString()+"px";
@@ -136,7 +141,10 @@ document.onkeydown = function(e) {
                     e.preventDefault();
                     let ctx = focusedElement.getContext("2d");
                     removedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
-                    ctx.putImageData(savedImages.pop(), 0,0);
+                    let img = savedImages.pop();
+                    ctx.canvas.width = img.width;
+                    ctx.canvas.height = img.height;
+                    ctx.putImageData(img, 0,0);
                 }
                 break;
             case "y":
@@ -144,7 +152,10 @@ document.onkeydown = function(e) {
                     e.preventDefault();
                     let ctx = focusedElement.getContext("2d");
                     savedImages.push(ctx.getImageData(0,0, ctx.canvas.width,ctx.canvas.height));
-                    focusedElement.getContext("2d").putImageData(removedImages.pop(), 0,0);
+                    let img = removedImages.pop();
+                    ctx.canvas.width = img.width;
+                    ctx.canvas.height = img.height;
+                    focusedElement.getContext("2d").putImageData(img, 0,0);
                 }
                 break;
         }
@@ -182,8 +193,8 @@ function load_file(e) {
     fr.onload = function(e) {
         console.log(e);
         var result = JSON.parse(e.target.result);
-        let ele = undefined;
         for (let i = 0; i < result.length; i++) {
+            let ele = undefined;
             switch (Object.keys(result[i])[0]) {
                 case "1":
                     ele = document.createElement("textarea");
@@ -229,9 +240,14 @@ function load_file(e) {
                     move_div.className = "resizeable";
                     ele.addEventListener("mouseover",(e)=>{
                         // console.debug(e);
-                        let ctx = move_div.firstChild.getContext("2d");
+                        let ctx = ele.getContext("2d");
                         if(Math.abs(ctx.canvas.width-move_div.clientWidth-15)>9 || Math.abs(ctx.canvas.height-move_div.clientHeight-10)>9) {
+                            if(focusedElement != ele) {
+                                savedImages = [];
+                            }
+                            focusedElement = ele;
                             let img = ctx.getImageData(0,0, ctx.canvas.width, ctx.canvas.height);
+                            savedImages.push(img);
                             ctx.canvas.width = move_div.clientWidth-15;
                             ctx.canvas.height = move_div.clientHeight-10;
                             ctx.putImageData(img, 0,0);
@@ -241,10 +257,16 @@ function load_file(e) {
 
                     //ele.width = document.body.clientWidth.toString();
                     //ele.height = "500";
-                    new CLIPBOARD_CLASS(ele, true);
+                    move_div.style.width = (ele.width+15).toString()+"px";
+                    move_div.style.height = (ele.height+10).toString()+"px";
                     ele.addEventListener("click", delete_element);
                     ReuseCanvasString(move_div, ele, result[i][3]);
                     document.querySelector("body").appendChild(move_div);
+                    new CLIPBOARD_CLASS(ele, true);
+                    ele.focus();
+                    focusedElement = ele
+                    savedImages = []
+                    removedImages = []
                     break;
                 case "4":
                     ele = document.createElement("input");
