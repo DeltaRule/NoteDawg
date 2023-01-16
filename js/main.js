@@ -46,7 +46,17 @@ document.onkeydown = function(e) {
                 // ele.src = "jspaint/index.html";
 
                 let move_div = document.createElement("div");
-                move_div.className = "resizeable"
+                move_div.className = "resizeable";
+                move_div.addEventListener("mousedown", (e) => {
+                    let temp_div = document.createElement("div");
+                    temp_div.className = "tmp_page_size_holder";
+                    temp_div.style.position = "absolute";
+                    temp_div.style.top = e.pageY + "px";
+                    temp_div.style.left = "0px";
+                    temp_div.style.width = e.pageX + "px";
+                    temp_div.style.height =  "1px";
+                    document.body.appendChild(temp_div);
+                });
                 ele.addEventListener("mouseover",(e)=>{
                     // console.debug(e);
                     let ctx = ele.getContext("2d");
@@ -106,7 +116,7 @@ document.onkeydown = function(e) {
                             });
                             break;
                         case "DIV":
-                            if(toSave[i].firstChild.tagName == "CANVAS") {
+                            if(toSave[i].firstChild != null && toSave[i].firstChild.tagName == "CANVAS") {
                                 saveArray.push({
                                     3: GetDrawingAsString(toSave[i].firstChild),
                                 });
@@ -238,6 +248,16 @@ function load_file(e) {
 
                     let move_div = document.createElement("div");
                     move_div.className = "resizeable";
+                    move_div.addEventListener("mousedown", (e) => {
+                        let temp_div = document.createElement("div");
+                        temp_div.className = "tmp_page_size_holder";
+                        temp_div.style.position = "absolute";
+                        temp_div.style.top = e.pageY + "px";
+                        temp_div.style.left = "0px";
+                        temp_div.style.width = e.pageX + "px";
+                        temp_div.style.height =  "1px";
+                        document.body.appendChild(temp_div);
+                    });
                     ele.addEventListener("mouseover",(e)=>{
                         // console.debug(e);
                         let ctx = ele.getContext("2d");
