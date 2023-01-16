@@ -6,6 +6,20 @@ window.onbeforeunload = function(e) {
     return "Do you want to exit this page?";
   };
 
+const tmp_page_size_holder_function = function(e) {
+    let temp_div = document.createElement("div");
+    temp_div.className = "tmp_page_size_holder";
+    temp_div.style.position = "absolute";
+    temp_div.style.top = document.body.clientHeight + "px";
+    temp_div.style.left = "0px";
+    temp_div.style.width = document.body.clientWidth + "px";
+    temp_div.style.height =  "1px";
+    [].forEach.call(document.getElementsByClassName("tmp_page_size_holder"), (e)=>{
+        document.body.removeChild(e);
+    });
+    document.body.appendChild(temp_div);
+};
+
 document.onkeydown = function(e) {
     if (e.altKey) {
         let ele = undefined;
@@ -47,16 +61,8 @@ document.onkeydown = function(e) {
 
                 let move_div = document.createElement("div");
                 move_div.className = "resizeable";
-                move_div.addEventListener("mousedown", (e) => {
-                    let temp_div = document.createElement("div");
-                    temp_div.className = "tmp_page_size_holder";
-                    temp_div.style.position = "absolute";
-                    temp_div.style.top = e.pageY + "px";
-                    temp_div.style.left = "0px";
-                    temp_div.style.width = e.pageX + "px";
-                    temp_div.style.height =  "1px";
-                    document.body.appendChild(temp_div);
-                });
+                move_div.addEventListener("mousedown", tmp_page_size_holder_function);
+                move_div.addEventListener("mouseup", tmp_page_size_holder_function);
                 ele.addEventListener("mouseover",(e)=>{
                     // console.debug(e);
                     let ctx = ele.getContext("2d");
@@ -248,16 +254,8 @@ function load_file(e) {
 
                     let move_div = document.createElement("div");
                     move_div.className = "resizeable";
-                    move_div.addEventListener("mousedown", (e) => {
-                        let temp_div = document.createElement("div");
-                        temp_div.className = "tmp_page_size_holder";
-                        temp_div.style.position = "absolute";
-                        temp_div.style.top = e.pageY + "px";
-                        temp_div.style.left = "0px";
-                        temp_div.style.width = e.pageX + "px";
-                        temp_div.style.height =  "1px";
-                        document.body.appendChild(temp_div);
-                    });
+                    move_div.addEventListener("mousedown", tmp_page_size_holder_function);
+                    move_div.addEventListener("mouseup", tmp_page_size_holder_function);
                     ele.addEventListener("mouseover",(e)=>{
                         // console.debug(e);
                         let ctx = ele.getContext("2d");
